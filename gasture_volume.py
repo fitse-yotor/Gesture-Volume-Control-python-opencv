@@ -7,7 +7,7 @@ import math
 from ctypes import cast, POINTER
 from comtypes import CLSCTX_ALL
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
-
+import screen_brightness_control as sbc
 ################################
 wCam, hCam = 1280, 780
 ################################
@@ -28,6 +28,9 @@ volume = cast(interface, POINTER(IAudioEndpointVolume))
 volRange = volume.GetVolumeRange()
 minVol = volRange[0]
 maxVol = volRange[1]
+
+
+
 vol = 0
 volBar = 400
 volPer = 0
@@ -48,6 +51,8 @@ while True:
         cv2.circle(img, (cx, cy), 15, (255, 255, 255), cv2.FILLED)
 
         length = math.hypot(x2 - x1, y2 - y1)
+
+        length = math.hypot(x2 - x1, y2 - y1)
         # print(length)
 
         # Hand range 50 - 300
@@ -56,8 +61,27 @@ while True:
         vol = np.interp(length, [50, 300], [minVol, maxVol])
         volBar = np.interp(length, [50, 300], [400, 150])
         volPer = np.interp(length, [50, 300], [0, 100])
+
         print(int(length), vol)
         volume.SetMasterVolumeLevel(vol, None)
+
+        x11, y11 = lmList[4][1], lmList[4][2]
+        x22, y22 = lmList[20][1], lmList[20][2]
+        cxx, cyy = (x11 + x22) // 2, (y11 + y22) // 2
+
+        cv2.circle(img, (x11, y11), 15, (255, 255, 255), cv2.FILLED)
+        cv2.circle(img, (x22, y22), 15, (255, 255, 255), cv2.FILLED)
+        cv2.line(img, (x11, y11), (x22, y22), (255, 255, 255), 3)
+        cv2.circle(img, (cxx, cyy), 15, (255, 255, 255), cv2.FILLED)
+
+        lengthB = math.hypot(x22 - x11, y22 - y11)
+        bri = np.interp(lengthB, [50, 300], [0, 100])
+        briBar = np.interp(lengthB, [150, 300], [400, 150])
+        briPer = np.interp(lengthB, [150, 300], [0, 100])
+
+        sbc.set_brightness(int(lengthB), display=0)
+        #sbc.set_brightness('+'+int(length)+'')
+
 
         if length < 50:
             cv2.circle(img, (cx, cy), 15, (0, 255, 0), cv2.FILLED)
@@ -74,4 +98,7 @@ while True:
                 1, (255, 0, 0), 3)
 
     cv2.imshow("Img", img)
-    cv2.waitKey(1)
+    #cv2.waitKey(1)
+    if cv2.waitKey(10) & 0xFF == ord('q'):
+        break    
+cv2.destroyAllWindows()
