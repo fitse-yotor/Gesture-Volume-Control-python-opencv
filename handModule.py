@@ -66,7 +66,9 @@ def main():
 
         cv2.imshow("Image", img)
         cv2.waitKey(1)
-
-
+        if cv2.waitKey(10) & 0xFF == ord('q'):
+            break
+        
+cv2.destroyAllWindows()
 if __name__ == "__main__":
     main()
